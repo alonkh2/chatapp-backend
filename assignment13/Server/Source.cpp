@@ -12,11 +12,11 @@ int main()
 		WSAInitializer wsaInit;
 		Server myServer;
 
-		myServer.serve(8876);
+		myServer.serve(8826);
 	}
 	catch (std::exception& e)
 	{
-		std::cout << "Error occured: " << e.what() << std::endl;
+		std::cout << "Error occurred: " << e.what() << std::endl;
 	}
 	system("PAUSE");
 	return 0;
