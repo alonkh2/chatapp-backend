@@ -80,7 +80,7 @@ void Server::accept()
 
 	// sockets_.insert(p1);
 	
-	p1.second->join();
+	p1.second->detach();
 
 	
 	// Helper::getStringPartFromSocket();
@@ -97,7 +97,7 @@ void Server::clientHandler(SOCKET clientSocket)
 	{
 		std::string s = "Welcome! What is your name (4 bytes)? ";
 		// send(clientSocket, s.c_str(), s.size(), 0);  // last parameter: flag. for us will be 0.
-
+		
 		// connect(clientSocket);
 
 		// send(clientSocket, s.c_str(), s.size(), 0);
