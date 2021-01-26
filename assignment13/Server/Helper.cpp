@@ -13,7 +13,7 @@ int Helper::getMessageTypeCode(SOCKET sc)
 	char* s = getPartFromSocket(sc, 3);
 	std::string msg(s);
 
-	if (msg == "")
+	if (msg.empty())
 		return 0;
 
 	int res = std::atoi(s);
@@ -31,6 +31,8 @@ void Helper::send_update_message_to_client(SOCKET sc, const string& file_content
 	const string all_users_size = getPaddedNumber(all_users.size(), 5);
 	const string res = code + current_file_size + file_content + username_size + second_username + all_users_size + all_users;
 	//TRACE("message: %s\n", res.c_str());
+	std::cout << res << std::endl;
+	std::cout << "socket: " << std::to_string(sc) << std::endl;
 	sendData(sc, res);
 }
 
@@ -79,7 +81,7 @@ char* Helper::getPartFromSocket(SOCKET sc, int bytesNum, int flags)
 
 	if (res == INVALID_SOCKET)
 	{
-		std::string s = "Error while recieving from socket: ";
+		std::string s = "Error while receiving from socket: ";
 		s += std::to_string(sc);
 		throw std::exception(s.c_str());
 	}

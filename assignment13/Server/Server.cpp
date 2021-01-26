@@ -106,12 +106,16 @@ void Server::clientHandler(SOCKET client_socket)
 		sockets_.insert(std::pair<std::string, SOCKET>(name, client_socket));
 		// mx_.unlock();
 
-		while (client_socket)
+		while (client_socket != INVALID_SOCKET)
 		{
 			std::string msg = Helper::getStringPartFromSocket(client_socket, 200);
-			std::cout << msg << std::endl;
+			// std::cout << msg << std::endl;
 			Helper::send_update_message_to_client(client_socket, "", "", get_users());
 		}
+		std::cout << "here" << std::endl;
+		std::string err = "Error while receiving from socket: ";
+		err += std::to_string(client_socket);
+		throw std::exception(err.c_str());
 		
 		// send(clientSocket, s.c_str(), s.size(), 0);
 
@@ -153,7 +157,7 @@ std::string Server::connect(SOCKET client_socket) const
 
 std::string Server::get_users() const
 {
-	std::string user_list = "";
+	std::string user_list;
 	for (auto user : sockets_)
 	{
 		user_list.append(user.first);
