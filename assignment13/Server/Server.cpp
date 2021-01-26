@@ -79,9 +79,10 @@ void Server::accept()
 
 void Server::clientHandler(SOCKET client_socket)
 {
+	std::string name;
 	try
 	{
-		const auto name = connect(client_socket);
+		name = connect(client_socket);
 		while (client_socket != INVALID_SOCKET)
 		{
 			std::string msg = Helper::getStringPartFromSocket(client_socket, 200);
@@ -92,13 +93,13 @@ void Server::clientHandler(SOCKET client_socket)
 		std::string err = "Error while receiving from socket: ";
 		err += std::to_string(client_socket);
 		throw std::exception(err.c_str());
-
-		// Closing the socket (in the level of the TCP protocol)
-		closesocket(client_socket);
 	}
 	catch (const std::exception& e)
 	{
 		closesocket(client_socket);
+		mx_.lock();
+		sockets_.erase(sockets_.find(name));
+		mx_.unlock();
 	}
 }
 
