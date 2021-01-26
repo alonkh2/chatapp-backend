@@ -52,8 +52,6 @@ void Server::serve(int port)
 		// and add then to the list of handlers
 		std::cout << "Waiting for client connection request" << std::endl;
 
-		// std::thread t1([=] {accept();  });
-
 		accept();
 	}
 }
@@ -72,25 +70,10 @@ void Server::accept()
 
 	std::cout << "Client accepted. Server and client can speak" << std::endl;
 
-	// const auto name = connect(client_socket);
-
-	// std::pair < std::string, std::thread*> p1;
-	// p1.first = name;
-	// p1.second = new std::thread([=] { clientHandler(client_socket); });
 
 	std::thread t([=] { clientHandler(client_socket); });
 	t.detach();
-	
-	// sockets_.insert(p1);
-	
-	// p1.second->detach();
-
-	
-	// Helper::getStringPartFromSocket();
-
 	// the function that handle the conversation with the client
-
-	// clientHandler(client_socket);
 }
 
 
@@ -99,25 +82,16 @@ void Server::clientHandler(SOCKET client_socket)
 	try
 	{
 		const auto name = connect(client_socket);
-		std::string s = "Welcome! What is your name (4 bytes)? ";
-		// send(clientSocket, s.c_str(), s.size(), 0);  // last parameter: flag. for us will be 0.
-
-		// mx_.lock();
-		sockets_.insert(std::pair<std::string, SOCKET>(name, client_socket));
-		// mx_.unlock();
-
 		while (client_socket != INVALID_SOCKET)
 		{
 			std::string msg = Helper::getStringPartFromSocket(client_socket, 200);
-			// std::cout << msg << std::endl;
+			// Helper::read_message(msg, name, client_socket, get_users());
 			Helper::send_update_message_to_client(client_socket, "", "", get_users());
 		}
 		std::cout << "here" << std::endl;
 		std::string err = "Error while receiving from socket: ";
 		err += std::to_string(client_socket);
 		throw std::exception(err.c_str());
-		
-		// send(clientSocket, s.c_str(), s.size(), 0);
 
 		// Closing the socket (in the level of the TCP protocol)
 		closesocket(client_socket);
@@ -128,40 +102,36 @@ void Server::clientHandler(SOCKET client_socket)
 	}
 }
 
-std::string Server::connect(SOCKET client_socket) const
+std::string Server::connect(SOCKET client_socket)
 {
 	char m[105];
 	recv(client_socket, m, 104, 0);
 	m[104] = 0;
 
-	std::string str(m);
+	const std::string str(m);
 
 	const auto len = atoi(str.substr(3, 2).c_str());
 
-	const auto name = str.substr(5, len);
+	auto name = str.substr(5, len);
 	std::cout << "Client name is: " << name << std::endl;
 
-	/*str = "1010000000000";
-	if (len / 10 == 0)
-	{
-		str.append("0");
-	}
+	mx_.lock();
+	sockets_.insert(std::pair<std::string, SOCKET>(name, client_socket));
+	mx_.unlock();
 
-	str.append(std::to_string(len));
-	str.append(name);
-
-	Helper::sendData(client_socket, str);*/
 	Helper::send_update_message_to_client(client_socket, "", "", get_users());
 	return name;
 }
 
-std::string Server::get_users() const
+std::string Server::get_users()
 {
 	std::string user_list;
+	mx_.lock();
 	for (auto user : sockets_)
 	{
 		user_list.append(user.first);
 		user_list.append("&");
 	}
+	mx_.unlock();
 	return user_list.substr(0, user_list.length() - 1);
 }

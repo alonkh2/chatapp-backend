@@ -27,9 +27,13 @@ public:
 	static void send_update_message_to_client(SOCKET sc, const std::string& file_content, const std::string& second_username, const std::string& all_users);
 	static std::string getPaddedNumber(int num, int digits);
 
+	static void read_message(const std::string& msg, const std::string& name, SOCKET sc, const std::string& users);
+
 private:
 	static char* getPartFromSocket(SOCKET sc, int bytesNum);
 	static char* getPartFromSocket(SOCKET sc, int bytesNum, int flags);
+
+	static int parse_int(const std::string&, int begin, int len);
 
 };
 

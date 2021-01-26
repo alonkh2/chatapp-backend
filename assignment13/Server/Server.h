@@ -21,9 +21,9 @@ private:
 	void accept();
 	void clientHandler(SOCKET client_socket);
 
-	std::string connect(SOCKET client_socket) const;
+	std::string connect(SOCKET client_socket);
 
-	std::string get_users() const;
+	std::string get_users();
 
 	SOCKET server_socket_;
 	std::map<std::string, SOCKET> sockets_;
