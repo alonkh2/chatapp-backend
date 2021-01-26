@@ -72,15 +72,18 @@ void Server::accept()
 
 	std::cout << "Client accepted. Server and client can speak" << std::endl;
 
-	const auto name = connect(client_socket);
+	// const auto name = connect(client_socket);
 
-	std::pair < std::string, std::thread*> p1;
-	p1.first = name;
-	p1.second = new std::thread([=] { clientHandler(client_socket); });
+	// std::pair < std::string, std::thread*> p1;
+	// p1.first = name;
+	// p1.second = new std::thread([=] { clientHandler(client_socket); });
 
+	std::thread t([=] { clientHandler(client_socket); });
+	t.detach();
+	
 	// sockets_.insert(p1);
 	
-	p1.second->detach();
+	// p1.second->detach();
 
 	
 	// Helper::getStringPartFromSocket();
@@ -91,30 +94,40 @@ void Server::accept()
 }
 
 
-void Server::clientHandler(SOCKET clientSocket)
+void Server::clientHandler(SOCKET client_socket)
 {
 	try
 	{
+		const auto name = connect(client_socket);
 		std::string s = "Welcome! What is your name (4 bytes)? ";
 		// send(clientSocket, s.c_str(), s.size(), 0);  // last parameter: flag. for us will be 0.
-		
-		// connect(clientSocket);
 
+		// mx_.lock();
+		sockets_.insert(std::pair<std::string, SOCKET>(name, client_socket));
+		// mx_.unlock();
+
+		while (client_socket)
+		{
+			std::string msg = Helper::getStringPartFromSocket(client_socket, 200);
+			std::cout << msg << std::endl;
+			Helper::send_update_message_to_client(client_socket, "", "", get_users());
+		}
+		
 		// send(clientSocket, s.c_str(), s.size(), 0);
 
 		// Closing the socket (in the level of the TCP protocol)
-		closesocket(clientSocket);
+		closesocket(client_socket);
 	}
 	catch (const std::exception& e)
 	{
-		closesocket(clientSocket);
+		closesocket(client_socket);
 	}
 }
 
-std::string Server::connect(SOCKET clientSocket) const
+std::string Server::connect(SOCKET client_socket) const
 {
 	char m[105];
-	recv(clientSocket, m, 104, 0);
+	recv(client_socket, m, 104, 0);
 	m[104] = 0;
 
 	std::string str(m);
@@ -124,7 +137,7 @@ std::string Server::connect(SOCKET clientSocket) const
 	const auto name = str.substr(5, len);
 	std::cout << "Client name is: " << name << std::endl;
 
-	str = "1010000000000";
+	/*str = "1010000000000";
 	if (len / 10 == 0)
 	{
 		str.append("0");
@@ -133,6 +146,18 @@ std::string Server::connect(SOCKET clientSocket) const
 	str.append(std::to_string(len));
 	str.append(name);
 
-	Helper::sendData(clientSocket, str);
+	Helper::sendData(client_socket, str);*/
+	Helper::send_update_message_to_client(client_socket, "", "", get_users());
 	return name;
+}
+
+std::string Server::get_users() const
+{
+	std::string user_list = "";
+	for (auto user : sockets_)
+	{
+		user_list.append(user.first);
+		user_list.append("&");
+	}
+	return user_list.substr(0, user_list.length() - 1);
 }

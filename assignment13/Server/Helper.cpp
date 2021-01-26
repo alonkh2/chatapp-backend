@@ -84,7 +84,10 @@ char* Helper::getPartFromSocket(SOCKET sc, int bytesNum, int flags)
 		throw std::exception(s.c_str());
 	}
 
-	data[bytesNum] = 0;
+	if (bytesNum < strlen(data))
+	{
+		data[bytesNum] = 0;
+	}
 	return data;
 }
 
