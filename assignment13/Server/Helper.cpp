@@ -64,15 +64,15 @@ string Helper::getPaddedNumber(int num, int digits)
 
 void Helper::read_message(const std::string& msg, const std::string& name, SOCKET sc, const std::string& users)
 {
-	std::string message;
+	std::string message, new_message, second_user;
 	const auto len_of_user = parse_int(msg, 3, 2), len_of_content = parse_int(msg, 5 + len_of_user, 5);
 	if (len_of_user > 0)
 	{
 		
-		auto second_user = msg.substr(5, len_of_user);
+		second_user = msg.substr(5, len_of_user);
 		std::string full = R"(E:\Magshimim\Coding\assignment_13\assignment13\Debug\)";
 		full.append(second_user.compare(name) > 0 ? name + "&" + second_user : second_user + "&" + name);
-		std::cout << full << std::endl;
+		// std::cout << full << std::endl;
 		if (len_of_content > 0)
 		{
 			full.append(".txt");
@@ -87,14 +87,16 @@ void Helper::read_message(const std::string& msg, const std::string& name, SOCKE
 			{
 				f1.open(full, std::ios::in);
 			}
-			std::string new_message = msg.substr(5 + len_of_content + len_of_user, len_of_content);
+			new_message = msg.substr(5 + len_of_content + len_of_user, len_of_content);
 			message.append(new_message);
 			std::cout << f1.is_open() << std::endl;
 			f1 << message;
 			f1.close();
-			send_update_message_to_client(sc, message, second_user, users);
+			
 		}
+		
 	}
+	send_update_message_to_client(sc, new_message, second_user, users);
 }
 
 // receive data from socket according byteSize
