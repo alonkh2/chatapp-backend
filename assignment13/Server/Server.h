@@ -32,7 +32,9 @@ private:
 
 	void handle_message();
 
-	void add_to_file(const std::string&, const std::string&);
+	static void add_to_file(const std::string&, const std::string&);
+
+	static std::string get_file(const std::string&, const std::string&);
 
 	SOCKET server_socket_;
 	std::map<std::string, SOCKET> sockets_;

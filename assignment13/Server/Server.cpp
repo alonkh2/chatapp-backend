@@ -74,6 +74,8 @@ void Server::accept()
 
 	std::thread t([=] { clientHandler(client_socket); });
 	t.detach();
+
+	
 	// the function that handle the conversation with the client
 }
 
@@ -84,16 +86,21 @@ void Server::clientHandler(SOCKET client_socket)
 	try
 	{
 		name = connect(client_socket);
+		if (sockets_.size() == 2)
+		{
+			std::thread msg_handling([=] { handle_message(); });
+			msg_handling.detach();
+		}
 		while (client_socket != INVALID_SOCKET)
 		{
 			auto msg = Helper::getStringPartFromSocket(client_socket, 200);
 			auto new_msg = Helper::read_message(msg);
 			auto to = Helper::get_second_user(msg);
-			/*if (!new_msg.empty() && !to.empty())
+			if (!new_msg.empty() && !to.empty())
 			{
-				add_message(msg, name, to);
-			}*/
-			Helper::send_update_message_to_client(client_socket, "", "", get_users());
+				add_message(new_msg, name, to);
+			}
+			Helper::send_update_message_to_client(client_socket, get_file(name, to), to, get_users());
 		}
 		std::cout << "here" << std::endl;
 		std::string err = "Error while receiving from socket: ";
@@ -154,39 +161,66 @@ void Server::add_message(const std::string& msg, const std::string& from, const 
 
 void Server::handle_message()
 {
-	auto i = 0;
-	std::unique_lock<std::mutex> ul(messages_mutex_);
-	cv_.wait(ul);
-	auto* const messages = new std::string[messages_.size()];
-	auto* const file_names = new std::string[messages_.size()];
-	while (!messages_.empty())
+	while (true)
 	{
-		messages[i] = messages_.front().to_string();
-		file_names[i] = messages_.front().get_file_name();
-		messages_.pop();
-		i++;
-	}
-	ul.unlock();
+		auto i = 0;
+		std::unique_lock<std::mutex> ul(messages_mutex_);
+		cv_.wait(ul);
+		auto* const messages = new std::string[messages_.size()];
+		auto* const file_names = new std::string[messages_.size()];
+		while (!messages_.empty())
+		{
+			messages[i] = messages_.front().to_string();
+			file_names[i] = messages_.front().get_file_name();
+			messages_.pop();
+			i++;
+		}
+		ul.unlock();
 
-	for (int i = 0; i < file_names->size(); ++i)
-	{
-		add_to_file(messages[i], file_names[i]);
+		for (int j = 0; j < i; ++j)
+		{
+			add_to_file(messages[j], file_names[j]);
+		}
+		delete[] messages;
+		delete[] file_names;
 	}
-	delete[] messages;
-	delete[] file_names;
 }
 
 void Server::add_to_file(const std::string& msg, const std::string& file)
 {
 	std::string message;
-	std::fstream f1(file, std::ios::out);
+	std::string temp;
+	std::string path = R"(E:\Magshimim\Coding\assignment_13\assignment13\Debug\)";
+	path.append(file);
+	std::ifstream f1(path);
 	if (f1)
 	{
-		f1 >> message;
+		while (f1 >> temp)
+		{
+			message.append(temp + " ");
+		}
 		f1.close();
 	}
-	f1.open(file, std::ios::in);
+	std::ofstream f2(path);
 	message.append(msg);
-	f1 << message;
-	f1.close();
+	f2 << message << std::endl;
+	f2.close();
+}
+
+std::string Server::get_file(const std::string& from, const std::string& to)
+{
+	std::string path = R"(E:\Magshimim\Coding\assignment_13\assignment13\Debug\)";
+	path.append(Helper::get_file_name(from, to));
+	std::ifstream f1(path);
+	std::string msg;
+	std::string temp;
+	if (f1)
+	{
+		while (f1 >> temp)
+		{
+			msg.append(temp + " ");
+		}
+		f1.close();
+	}
+	return msg;
 }

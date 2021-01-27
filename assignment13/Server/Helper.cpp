@@ -18,18 +18,20 @@ int Helper::getMessageTypeCode(SOCKET sc)
 
 	int res = std::atoi(s);
 	delete s;
-	return  res;
+	return res;
 }
 
 
-void Helper::send_update_message_to_client(SOCKET sc, const string& file_content, const string& second_username, const string& all_users)
+void Helper::send_update_message_to_client(SOCKET sc, const string& file_content, const string& second_username,
+                                           const string& all_users)
 {
 	//TRACE("all users: %s\n", all_users.c_str())
 	const string code = std::to_string(MT_SERVER_UPDATE);
 	const string current_file_size = getPaddedNumber(file_content.size(), 5);
 	const string username_size = getPaddedNumber(second_username.size(), 2);
 	const string all_users_size = getPaddedNumber(all_users.size(), 5);
-	const string res = code + current_file_size + file_content + username_size + second_username + all_users_size + all_users;
+	const string res = code + current_file_size + file_content + username_size + second_username + all_users_size +
+		all_users;
 	//TRACE("message: %s\n", res.c_str());
 	// std::cout << res << std::endl;
 	// std::cout << "socket: " << std::to_string(sc) << std::endl;
@@ -59,7 +61,6 @@ string Helper::getPaddedNumber(int num, int digits)
 	std::ostringstream ostr;
 	ostr << std::setw(digits) << std::setfill('0') << num;
 	return ostr.str();
-
 }
 
 std::string Helper::read_message(const std::string& msg)
@@ -68,7 +69,7 @@ std::string Helper::read_message(const std::string& msg)
 	const auto len_of_user = parse_int(msg, 3, 2), len_of_content = parse_int(msg, 5 + len_of_user, 5);
 	if (len_of_user > 0 && len_of_content > 0)
 	{
-		std::cout << msg  << "len of user: " << len_of_user << " len of content: " << len_of_content << std::endl;
+		std::cout << msg << "len of user: " << len_of_user << " len of content: " << len_of_content << std::endl;
 		new_message = msg.substr(10 + len_of_user, len_of_content);
 		std::cout << new_message << std::endl;
 	}
@@ -82,7 +83,16 @@ std::string Helper::get_second_user(const std::string& msg)
 	{
 		return msg.substr(5, len_of_user);
 	}
-	return nullptr;
+	return "";
+}
+
+std::string Helper::get_file_name(const std::string& from, const std::string& to)
+{
+	std::ostringstream ostr;
+	auto const first = from.compare(to) > 0 ? to : from, second = first == to ? from : to;
+
+	ostr << first << "&" << second << ".txt";
+	return ostr.str();
 }
 
 // receive data from socket according byteSize
