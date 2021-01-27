@@ -85,8 +85,8 @@ void Server::clientHandler(SOCKET client_socket)
 		name = connect(client_socket);
 		while (client_socket != INVALID_SOCKET)
 		{
-			std::string msg = Helper::getStringPartFromSocket(client_socket, 200);
-			// Helper::read_message(msg, name, client_socket, get_users());
+			auto msg = Helper::getStringPartFromSocket(client_socket, 200);
+			auto new_msg = Helper::read_message(msg);
 			Helper::send_update_message_to_client(client_socket, "", "", get_users());
 		}
 		std::cout << "here" << std::endl;
@@ -114,7 +114,7 @@ std::string Server::connect(SOCKET client_socket)
 	const auto len = atoi(str.substr(3, 2).c_str());
 
 	auto name = str.substr(5, len);
-	std::cout << "Client name is: " << name << std::endl;
+	// std::cout << "Client name is: " << name << std::endl;
 
 	mx_.lock();
 	sockets_.insert(std::pair<std::string, SOCKET>(name, client_socket));
@@ -135,4 +135,38 @@ std::string Server::get_users()
 	}
 	mx_.unlock();
 	return user_list.substr(0, user_list.length() - 1);
+}
+
+void Server::add_message(const std::string& msg, const std::string& from, const std::string& to)
+{
+	std::lock_guard<std::mutex> lg(messages_mutex_);
+	messages_.push(message(msg, from, to));
+}
+
+void Server::handle_message()
+{
+	auto i = 0;
+	std::unique_lock<std::mutex> ul(messages_mutex_);
+	cv_.wait(ul);
+	auto* const messages = new std::string[messages_.size()];
+	auto* const file_names = new std::string[messages_.size()];
+	while (!messages_.empty())
+	{
+		messages[i] = messages_.front().to_string();
+		file_names[i] = messages_.front().get_file_name();
+		messages_.pop();
+		i++;
+	}
+	ul.unlock();
+
+	for (int i = 0; i < file_names->size(); ++i)
+	{
+		add_to_file(messages[i], file_names[i]);
+	}
+	delete[] messages;
+	delete[] file_names;
+}
+
+void Server::add_to_file(const std::string& msg, const std::string& file)
+{
 }

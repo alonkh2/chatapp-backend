@@ -31,8 +31,8 @@ void Helper::send_update_message_to_client(SOCKET sc, const string& file_content
 	const string all_users_size = getPaddedNumber(all_users.size(), 5);
 	const string res = code + current_file_size + file_content + username_size + second_username + all_users_size + all_users;
 	//TRACE("message: %s\n", res.c_str());
-	std::cout << res << std::endl;
-	std::cout << "socket: " << std::to_string(sc) << std::endl;
+	// std::cout << res << std::endl;
+	// std::cout << "socket: " << std::to_string(sc) << std::endl;
 	sendData(sc, res);
 }
 
@@ -62,41 +62,17 @@ string Helper::getPaddedNumber(int num, int digits)
 
 }
 
-void Helper::read_message(const std::string& msg, const std::string& name, SOCKET sc, const std::string& users)
+std::string Helper::read_message(const std::string& msg)
 {
-	std::string message, new_message, second_user;
+	std::string new_message;
 	const auto len_of_user = parse_int(msg, 3, 2), len_of_content = parse_int(msg, 5 + len_of_user, 5);
-	if (len_of_user > 0)
+	if (len_of_user > 0 && len_of_content > 0)
 	{
-		
-		second_user = msg.substr(5, len_of_user);
-		std::string full = R"(E:\Magshimim\Coding\assignment_13\assignment13\Debug\)";
-		full.append(second_user.compare(name) > 0 ? name + "&" + second_user : second_user + "&" + name);
-		// std::cout << full << std::endl;
-		if (len_of_content > 0)
-		{
-			full.append(".txt");
-			std::fstream f1(full, std::ios::out);
-			if (f1)
-			{
-				f1 >> message;
-				f1.close();
-				f1.open(full, std::ios::app);
-			}
-			else
-			{
-				f1.open(full, std::ios::in);
-			}
-			new_message = msg.substr(5 + len_of_content + len_of_user, len_of_content);
-			message.append(new_message);
-			std::cout << f1.is_open() << std::endl;
-			f1 << message;
-			f1.close();
-			
-		}
-		
+		std::cout << msg  << "len of user: " << len_of_user << " len of content: " << len_of_content << std::endl;
+		new_message = msg.substr(10 + len_of_user, len_of_content);
+		std::cout << new_message << std::endl;
 	}
-	send_update_message_to_client(sc, new_message, second_user, users);
+	return new_message;
 }
 
 // receive data from socket according byteSize

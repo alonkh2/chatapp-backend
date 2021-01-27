@@ -2,11 +2,14 @@
 
 #include <map>
 #include <mutex>
+#include <queue>
 #include <string>
 #include <thread>
 #include <vector>
 #include <WinSock2.h>
 #include <Windows.h>
+
+#include "message.h"
 
 
 class Server
@@ -25,11 +28,19 @@ private:
 
 	std::string get_users();
 
+	void add_message(const std::string&, const std::string&, const std::string&);
+
+	void handle_message();
+
+	void add_to_file(const std::string&, const std::string&);
+
 	SOCKET server_socket_;
 	std::map<std::string, SOCKET> sockets_;
-	// std::vector<std::string> users_;
-	
-	std::mutex mx_;
-	// std::vector<std::thread> sockets_;
-};
 
+	std::queue<message> messages_;
+	     
+	std::mutex mx_;
+	std::mutex messages_mutex_;
+
+	std::condition_variable cv_;
+};
