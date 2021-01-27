@@ -15,25 +15,30 @@
 class Server
 {
 public:
+	// C'tor and d'tor.
+	
 	Server();
 	~Server();
+
+	// Server.
 	void serve(unsigned short port);
 
 private:
-
+	// Listening.
 	void accept();
-	void clientHandler(SOCKET client_socket);
 
+	// Talking.
+	void client_handler(SOCKET client_socket);
 	std::string connect(SOCKET client_socket);
 
+
+	// Stringing.
 	std::string get_users();
 
+	// Filing.
 	void add_message(const std::string&, const std::string&, const std::string&);
-
 	void handle_message();
-
 	static void add_to_file(const std::string&, const std::string&);
-
 	static std::string get_file(const std::string&, const std::string&);
 
 	SOCKET server_socket_;

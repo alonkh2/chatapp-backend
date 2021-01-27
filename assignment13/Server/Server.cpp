@@ -6,6 +6,9 @@
 #include <fstream>
 
 
+/**
+ * \brief C'tor.
+ */
 Server::Server()
 {
 	// this server use TCP. that why SOCK_STREAM & IPPROTO_TCP
@@ -16,6 +19,9 @@ Server::Server()
 		throw std::exception(__FUNCTION__ " - socket");
 }
 
+/**
+ * \brief D'tor.
+ */
 Server::~Server()
 {
 	try
@@ -29,7 +35,11 @@ Server::~Server()
 	}
 }
 
-void Server::serve(unsigned short port)
+/**
+ * \brief Creates a listening socket.
+ * \param port The port to listen on.
+ */
+void Server::serve(const unsigned short port)
 {
 	struct sockaddr_in sa = {0};
 
@@ -58,13 +68,16 @@ void Server::serve(unsigned short port)
 }
 
 
+/**
+ * \brief Accepts sockets and adds them to the list.
+ */
 void Server::accept()
 {
 	// notice that we step out to the global namespace
 	// for the resolution of the function accept
 
 	// this accepts the client and create a specific socket from server to this client
-	const SOCKET client_socket = ::accept(server_socket_, nullptr, nullptr);
+	const auto client_socket = ::accept(server_socket_, nullptr, nullptr);
 
 	if (client_socket == INVALID_SOCKET)
 		throw std::exception(__FUNCTION__);
@@ -72,7 +85,7 @@ void Server::accept()
 	std::cout << "Client accepted. Server and client can speak" << std::endl;
 
 
-	std::thread t([=] { clientHandler(client_socket); });
+	std::thread t([=] { client_handler(client_socket); });
 	t.detach();
 
 	
@@ -80,7 +93,11 @@ void Server::accept()
 }
 
 
-void Server::clientHandler(SOCKET client_socket)
+/**
+ * \brief Handles everything basically.
+ * \param client_socket The socket to talk on.
+ */
+void Server::client_handler(const SOCKET client_socket)
 {
 	std::string name;
 	try
@@ -91,7 +108,7 @@ void Server::clientHandler(SOCKET client_socket)
 			std::thread msg_handling([=] { handle_message(); });
 			msg_handling.detach();
 		}
-		while (client_socket != INVALID_SOCKET)
+		while (true)
 		{
 			auto msg = Helper::getStringPartFromSocket(client_socket, 200);
 			auto new_msg = Helper::read_message(msg);
@@ -102,13 +119,11 @@ void Server::clientHandler(SOCKET client_socket)
 			}
 			Helper::send_update_message_to_client(client_socket, get_file(name, to), to, get_users());
 		}
-		std::cout << "here" << std::endl;
-		std::string err = "Error while receiving from socket: ";
-		err += std::to_string(client_socket);
-		throw std::exception(err.c_str());
+		
 	}
 	catch (const std::exception& e)
 	{
+		std::cout << e.what() << std::endl;
 		closesocket(client_socket);
 		mx_.lock();
 		sockets_.erase(sockets_.find(name));
@@ -116,6 +131,11 @@ void Server::clientHandler(SOCKET client_socket)
 	}
 }
 
+/**
+ * \brief Connects to the client.
+ * \param client_socket The socket to connect to.
+ * \return The client's name.
+ */
 std::string Server::connect(SOCKET client_socket)
 {
 	char m[105];
@@ -123,11 +143,8 @@ std::string Server::connect(SOCKET client_socket)
 	m[104] = 0;
 
 	const std::string str(m);
-
 	const auto len = atoi(str.substr(3, 2).c_str());
-
 	auto name = str.substr(5, len);
-	// std::cout << "Client name is: " << name << std::endl;
 
 	mx_.lock();
 	sockets_.insert(std::pair<std::string, SOCKET>(name, client_socket));
@@ -137,6 +154,10 @@ std::string Server::connect(SOCKET client_socket)
 	return name;
 }
 
+/**
+ * \brief Creates a string representation of all users.
+ * \return A string representation of all users.
+ */
 std::string Server::get_users()
 {
 	std::string user_list;
@@ -150,15 +171,23 @@ std::string Server::get_users()
 	return user_list.substr(0, user_list.length() - 1);
 }
 
+/**
+ * \brief 
+ * \param msg The message itself.
+ * \param from The sender.
+ * \param to The recipient.
+ */
 void Server::add_message(const std::string& msg, const std::string& from, const std::string& to)
 {
-	// std::lock_guard<std::mutex> lg(messages_mutex_);
 	messages_mutex_.lock();
 	messages_.push(message(msg, from, to));
 	messages_mutex_.unlock();
 	cv_.notify_all();
 }
 
+/**
+ * \brief Creates string representations of all messages. 
+ */
 void Server::handle_message()
 {
 	while (true)
@@ -177,7 +206,7 @@ void Server::handle_message()
 		}
 		ul.unlock();
 
-		for (int j = 0; j < i; ++j)
+		for (auto j = 0; j < i; ++j)
 		{
 			add_to_file(messages[j], file_names[j]);
 		}
@@ -186,6 +215,11 @@ void Server::handle_message()
 	}
 }
 
+/**
+ * \brief Appends a message to a file.
+ * \param msg The message to add.
+ * \param file The relative path.
+ */
 void Server::add_to_file(const std::string& msg, const std::string& file)
 {
 	std::string message;
@@ -207,6 +241,12 @@ void Server::add_to_file(const std::string& msg, const std::string& file)
 	f2.close();
 }
 
+/**
+ * \brief Gets the content of the convo's file.
+ * \param from The message's sender.
+ * \param to The recipient.
+ * \return The content of the matching file.
+ */
 std::string Server::get_file(const std::string& from, const std::string& to)
 {
 	std::string path = R"(E:\Magshimim\Coding\assignment_13\assignment13\Debug\)";
