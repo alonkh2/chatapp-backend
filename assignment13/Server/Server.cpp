@@ -29,7 +29,7 @@ Server::~Server()
 	}
 }
 
-void Server::serve(int port)
+void Server::serve(unsigned short port)
 {
 	struct sockaddr_in sa = {0};
 

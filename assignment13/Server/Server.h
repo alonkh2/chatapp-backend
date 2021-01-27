@@ -17,7 +17,7 @@ class Server
 public:
 	Server();
 	~Server();
-	void serve(int port);
+	void serve(unsigned short port);
 
 private:
 

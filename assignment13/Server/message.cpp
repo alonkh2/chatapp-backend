@@ -56,9 +56,4 @@ std::string message::to_string() const
 std::string message::get_file_name() const
 {
 	return Helper::get_file_name(from_, to_);
-	/*std::ostringstream ostr;
-	auto const first = from_.compare(to_) > 0 ? to_ : from_, second = first == to_? from_ : to_;
-
-	ostr << first << "&" << second << ".txt";
-	return ostr.str();*/
 }
