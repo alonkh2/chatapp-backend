@@ -3,6 +3,7 @@
 #include <exception>
 #include <iostream>
 #include <string>
+#include <fstream>
 
 
 Server::Server()
@@ -87,6 +88,11 @@ void Server::clientHandler(SOCKET client_socket)
 		{
 			auto msg = Helper::getStringPartFromSocket(client_socket, 200);
 			auto new_msg = Helper::read_message(msg);
+			auto to = Helper::get_second_user(msg);
+			/*if (!new_msg.empty() && !to.empty())
+			{
+				add_message(msg, name, to);
+			}*/
 			Helper::send_update_message_to_client(client_socket, "", "", get_users());
 		}
 		std::cout << "here" << std::endl;
@@ -139,8 +145,11 @@ std::string Server::get_users()
 
 void Server::add_message(const std::string& msg, const std::string& from, const std::string& to)
 {
-	std::lock_guard<std::mutex> lg(messages_mutex_);
+	// std::lock_guard<std::mutex> lg(messages_mutex_);
+	messages_mutex_.lock();
 	messages_.push(message(msg, from, to));
+	messages_mutex_.unlock();
+	cv_.notify_all();
 }
 
 void Server::handle_message()
@@ -169,4 +178,15 @@ void Server::handle_message()
 
 void Server::add_to_file(const std::string& msg, const std::string& file)
 {
+	std::string message;
+	std::fstream f1(file, std::ios::out);
+	if (f1)
+	{
+		f1 >> message;
+		f1.close();
+	}
+	f1.open(file, std::ios::in);
+	message.append(msg);
+	f1 << message;
+	f1.close();
 }

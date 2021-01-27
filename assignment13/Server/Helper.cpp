@@ -75,6 +75,16 @@ std::string Helper::read_message(const std::string& msg)
 	return new_message;
 }
 
+std::string Helper::get_second_user(const std::string& msg)
+{
+	const auto len_of_user = parse_int(msg, 3, 2);
+	if (len_of_user > 0)
+	{
+		return msg.substr(5, len_of_user);
+	}
+	return nullptr;
+}
+
 // receive data from socket according byteSize
 // this is private function
 char* Helper::getPartFromSocket(SOCKET sc, int bytesNum)

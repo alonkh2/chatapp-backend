@@ -29,6 +29,8 @@ public:
 
 	static std::string read_message(const std::string& msg);
 
+	static std::string get_second_user(const std::string& msg);
+
 private:
 	static char* getPartFromSocket(SOCKET sc, int bytesNum);
 	static char* getPartFromSocket(SOCKET sc, int bytesNum, int flags);
