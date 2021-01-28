@@ -9,15 +9,24 @@
 int main()
 {
 	std::ifstream f1;
-	f1.open(R"(E:\Magshimim\Coding\assignment_13\assignment13\Debug\config.txt)");
+	//f1.open(R"(E:\Magshimim\Coding\assignment_13\assignment13\Debug\config.txt)");
+	f1.open("config.txt");
+	unsigned short port;
+	
+	if (f1)
+	{
+		std::string port_str;
 
-	std::string port_str;
+		std::getline(f1, port_str);
+		std::getline(f1, port_str);
+		port_str = port_str.substr(port_str.length() - 4, 4);
+		port = atoi(port_str.c_str());
+	}
 
-	std::getline(f1, port_str);
-	std::getline(f1, port_str);
+	port = 8826;
 
-	port_str = port_str.substr(port_str.length() - 4, 4);
-	const unsigned short port = atoi(port_str.c_str());
+	
+	
 	try
 	{
 		WSAInitializer wsaInit;

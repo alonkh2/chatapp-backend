@@ -9,7 +9,7 @@
 /**
  * \brief C'tor.
  */
-Server::Server()
+Server::Server(): has_message_thread_(false)
 {
 	// this server use TCP. that why SOCK_STREAM & IPPROTO_TCP
 	// if the server use UDP we will use: SOCK_DGRAM & IPPROTO_UDP
@@ -88,7 +88,7 @@ void Server::accept()
 	std::thread t([=] { client_handler(client_socket); });
 	t.detach();
 
-	
+
 	// the function that handle the conversation with the client
 }
 
@@ -103,10 +103,11 @@ void Server::client_handler(const SOCKET client_socket)
 	try
 	{
 		name = connect(client_socket);
-		if (sockets_.size() == 2)
+		if (sockets_.size() == 2 && !has_message_thread_)
 		{
 			std::thread msg_handling([=] { handle_message(); });
 			msg_handling.detach();
+			has_message_thread_ = true;
 		}
 		while (true)
 		{
@@ -119,7 +120,6 @@ void Server::client_handler(const SOCKET client_socket)
 			}
 			Helper::send_update_message_to_client(client_socket, get_file(name, to), to, get_users());
 		}
-		
 	}
 	catch (const std::exception& e)
 	{
@@ -224,8 +224,9 @@ void Server::add_to_file(const std::string& msg, const std::string& file)
 {
 	std::string message;
 	std::string temp;
-	std::string path = R"(E:\Magshimim\Coding\assignment_13\assignment13\Debug\)";
-	path.append(file);
+	// std::string path = R"(E:\Magshimim\Coding\assignment_13\assignment13\Debug\)";
+	// path.append(file);
+	auto const path = file;
 	std::ifstream f1(path);
 	if (f1)
 	{
@@ -249,8 +250,9 @@ void Server::add_to_file(const std::string& msg, const std::string& file)
  */
 std::string Server::get_file(const std::string& from, const std::string& to)
 {
-	std::string path = R"(E:\Magshimim\Coding\assignment_13\assignment13\Debug\)";
-	path.append(Helper::get_file_name(from, to));
+	// std::string path = R"(E:\Magshimim\Coding\assignment_13\assignment13\Debug\)";
+	// path.append(Helper::get_file_name(from, to));
+	auto const path = Helper::get_file_name(from, to);
 	std::ifstream f1(path);
 	std::string msg;
 	std::string temp;

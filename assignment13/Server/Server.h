@@ -49,5 +49,7 @@ private:
 	std::mutex mx_;
 	std::mutex messages_mutex_;
 
+	bool has_message_thread_;
+
 	std::condition_variable cv_;
 };

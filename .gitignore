@@ -2,8 +2,7 @@
 # Created by https://www.toptal.com/developers/gitignore/api/visualstudio,c++
 # Edit at https://www.toptal.com/developers/gitignore?templates=visualstudio,c++
 
-*/primes.txt
-*/primes2.txt
+*/config.txt
 
 ### C++ ###
 # Prerequisites
