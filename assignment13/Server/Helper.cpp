@@ -88,11 +88,8 @@ std::string Helper::get_second_user(const std::string& msg)
 
 std::string Helper::get_file_name(const std::string& from, const std::string& to)
 {
-	std::ostringstream ostr;
 	auto const first = from.compare(to) > 0 ? to : from, second = first == to ? from : to;
-
-	ostr << first << "&" << second << ".txt";
-	return ostr.str();
+	return first + "&" + second + ".txt";
 }
 
 // receive data from socket according byteSize
