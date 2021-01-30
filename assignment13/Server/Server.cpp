@@ -5,6 +5,9 @@
 #include <string>
 #include <fstream>
 
+#define MAX_LENGTH 105
+#define LAST_POS 104
+
 
 /**
  * \brief C'tor.
@@ -138,9 +141,9 @@ void Server::client_handler(const SOCKET client_socket)
  */
 std::string Server::connect(SOCKET client_socket)
 {
-	char m[105];
-	recv(client_socket, m, 104, 0);
-	m[104] = 0;
+	char m[MAX_LENGTH];
+	recv(client_socket, m, LAST_POS, 0);
+	m[LAST_POS] = 0;
 
 	const std::string str(m);
 	const auto len = atoi(str.substr(3, 2).c_str());
@@ -172,7 +175,7 @@ std::string Server::get_users()
 }
 
 /**
- * \brief 
+ * \brief Adds a message to the queue.
  * \param msg The message itself.
  * \param from The sender.
  * \param to The recipient.

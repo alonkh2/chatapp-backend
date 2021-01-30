@@ -9,7 +9,6 @@
 int main()
 {
 	std::ifstream f1;
-	//f1.open(R"(E:\Magshimim\Coding\assignment_13\assignment13\Debug\config.txt)");
 	f1.open("config.txt");
 	unsigned short port;
 	

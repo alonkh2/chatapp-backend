@@ -69,9 +69,7 @@ std::string Helper::read_message(const std::string& msg)
 	const auto len_of_user = parse_int(msg, 3, 2), len_of_content = parse_int(msg, 5 + len_of_user, 5);
 	if (len_of_user > 0 && len_of_content > 0)
 	{
-		std::cout << msg << "len of user: " << len_of_user << " len of content: " << len_of_content << std::endl;
 		new_message = msg.substr(10 + len_of_user, len_of_content);
-		std::cout << new_message << std::endl;
 	}
 	return new_message;
 }
